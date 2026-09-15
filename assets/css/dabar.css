@@ -1,0 +1,165 @@
+/* Definitive Announcement Bar */
+
+#dabar {
+	position: relative;
+	z-index: 9990;
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	margin: 0;
+	background: var(--dabar-bg, #111);
+	color: var(--dabar-color, #fff);
+	font-size: var(--dabar-font-size, 14px);
+	line-height: 1.4;
+}
+
+#dabar[hidden],
+#dabar[data-relocate],
+.dabar-dismissed #dabar {
+	display: none !important;
+}
+
+#dabar *,
+#dabar *::before,
+#dabar *::after {
+	box-sizing: border-box;
+}
+
+#dabar.dabar--sticky {
+	position: sticky;
+	top: 0;
+}
+
+.admin-bar #dabar.dabar--sticky {
+	top: 32px;
+}
+
+@media screen and (max-width: 782px) {
+	.admin-bar #dabar.dabar--sticky {
+		top: 46px;
+	}
+}
+
+@media screen and (max-width: 600px) {
+	.admin-bar #dabar.dabar--sticky {
+		top: 0;
+	}
+}
+
+#dabar .dabar__inner {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--dabar-padding, 10px 24px);
+}
+
+/* All messages share one grid cell, so the bar keeps the height of the tallest one. */
+#dabar .dabar__messages {
+	display: grid;
+	width: 100%;
+	justify-items: center;
+	text-align: center;
+}
+
+#dabar.dabar--dismissible .dabar__messages {
+	padding-inline: 32px;
+}
+
+#dabar.dabar--uppercase .dabar__messages {
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+#dabar .dabar__message {
+	grid-area: 1 / 1;
+	align-self: center;
+	opacity: 0;
+	visibility: hidden;
+	text-wrap: balance;
+	transition: opacity var(--dabar-fade, 600ms) ease, visibility 0s linear var(--dabar-fade, 600ms);
+}
+
+#dabar .dabar__message.is-active {
+	opacity: 1;
+	visibility: visible;
+	transition: opacity var(--dabar-fade, 600ms) ease, visibility 0s;
+}
+
+#dabar .dabar__message p {
+	margin: 0;
+}
+
+#dabar .dabar__message a {
+	color: inherit;
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+#dabar .dabar__message a:hover,
+#dabar .dabar__message a:focus {
+	color: inherit;
+	opacity: 0.8;
+}
+
+/* Reset theme button styles (WooCommerce and many themes style every button). */
+#dabar .dabar__close {
+	position: absolute;
+	top: 50%;
+	right: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	min-width: 0;
+	height: 32px;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	background: transparent;
+	box-shadow: none;
+	color: var(--dabar-close-color, currentColor);
+	font-size: inherit;
+	line-height: 1;
+	cursor: pointer;
+	transform: translateY(-50%);
+	transition: opacity 0.2s ease;
+}
+
+#dabar .dabar__close:hover {
+	background: transparent;
+	color: var(--dabar-close-color, currentColor);
+	opacity: 0.7;
+}
+
+#dabar .dabar__close:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+#dabar .dabar__close svg {
+	display: block;
+	width: 18px;
+	height: 18px;
+	pointer-events: none;
+}
+
+.rtl #dabar .dabar__close {
+	right: auto;
+	left: 8px;
+}
+
+#dabar.is-closing {
+	overflow: hidden;
+	transition: height 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#dabar,
+	#dabar .dabar__message,
+	#dabar .dabar__message.is-active {
+		transition: none;
+	}
+}
