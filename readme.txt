@@ -1,5 +1,5 @@
-=== Definitive Announcement Bar for Bricks and WooCommerce ===
-Contributors: leokawa
+=== Definitive Announcement Bar – Simple, Lightweight Top Bar for Bricks and Online Stores ===
+Contributors: studioleokawa
 Tags: announcement bar, notification bar, top bar, woocommerce, bricks
 Requires at least: 6.0
 Tested up to: 7.1
@@ -25,17 +25,21 @@ It is built to stay out of your way: one small stylesheet, one small script with
 
 = Features =
 
-* Multiple rotating messages with links, bold and italic text
-* Background, text and close button colors, font size, padding and uppercase style
-* Optional sticky bar that stays visible while scrolling
-* Dismissible for a session or a number of days, and it reappears automatically when you change the messages
-* Hide the bar on the front page, blog, posts, pages, search, 404 or WooCommerce pages
-* Hide the bar on any single post, page or product from its edit screen
+* Multiple rotating messages, edited in a compact visual editor with bold, italic and links
+* Live preview on the settings page that updates while you edit
+* Optional call-to-action button with its own colors
+* Background, text, link and close button colors, font family, font size, height, padding, alignment and uppercase style
+* Pick a font installed on your site (theme, Font Library or Bricks custom fonts) or type any CSS font-family
+* Top of the page, optionally sticky while scrolling, or fixed to the bottom of the screen
+* Optional close button (×): a closed bar stays hidden for the session or a number of days, and reappears automatically when you change the messages
+* Show the bar everywhere except selected pages, or only on selected pages: front page, blog, posts, pages, search, 404 or WooCommerce pages
+* Always show or never show the bar on any single post, page or product from its edit screen
+* Show the bar on desktop and mobile, desktop only or mobile only
 * Show the bar to everyone, only logged-in users or only logged-out visitors
 * Schedule a start and end date, for example for a weekend sale
 * Works with page caching: dismissal and scheduling are also checked in the browser
 * Accessible: keyboard-friendly close button, rotation pauses on hover and focus, and animations are turned off for visitors who prefer reduced motion
-* Translation ready and RTL friendly
+* Translation ready and RTL friendly. Messages and the button can be translated with WPML or Polylang
 
 == Installation ==
 
@@ -73,7 +77,7 @@ Use the `dabar_should_display` filter:
 
 = Can I style the bar with my own CSS? =
 
-Yes. The bar uses the ID `#dabar` and the classes `.dabar__inner`, `.dabar__message` and `.dabar__close`. The colors and sizes are CSS custom properties (`--dabar-bg`, `--dabar-color`, `--dabar-close-color`, `--dabar-font-size`, `--dabar-padding`), so you can override them in your stylesheet.
+Yes. The bar uses the ID `#dabar` and the classes `.dabar__inner`, `.dabar__content`, `.dabar__message`, `.dabar__button` and `.dabar__close`. The colors and sizes are CSS custom properties (`--dabar-bg`, `--dabar-color`, `--dabar-close-color`, `--dabar-link-color`, `--dabar-button-bg`, `--dabar-button-color`, `--dabar-font-family`, `--dabar-font-size`, `--dabar-min-height`, `--dabar-padding`), so you can override them in your stylesheet.
 
 == Screenshots ==
 

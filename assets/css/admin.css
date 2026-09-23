@@ -36,6 +36,40 @@
 	width: 180px;
 }
 
+/* Live preview: stays in view while the settings below are edited. */
+.no-js .dabar-preview-box {
+	display: none;
+}
+
+.dabar-admin .dabar-preview-box .inside {
+	padding-top: 16px;
+	padding-bottom: 4px;
+}
+
+.dabar-preview {
+	overflow: hidden;
+	border-radius: 2px;
+	background: #f6f7f7;
+	transition: opacity 0.2s ease;
+}
+
+.dabar-preview.is-off {
+	opacity: 0.45;
+}
+
+.dabar-admin .dabar-preview-box .description {
+	margin: 8px 0 12px;
+}
+
+@media screen and (min-width: 783px) {
+	.dabar-admin .dabar-preview-box {
+		position: sticky;
+		top: 32px;
+		z-index: 10;
+		box-shadow: 0 -20px 0 #f0f0f1, 0 1px 1px rgba(0, 0, 0, 0.04);
+	}
+}
+
 .dabar-admin .submit {
 	margin-top: 8px;
 }
@@ -50,6 +84,11 @@
 .dabar-message-row textarea {
 	flex: 1;
 	margin: 0;
+}
+
+.dabar-message-row .wp-editor-wrap {
+	flex: 1;
+	min-width: 0;
 }
 
 .dabar-unit {
@@ -101,8 +140,21 @@
 	outline: 2px solid transparent;
 }
 
+/* An optional color that is not set shows a "none" swatch. */
+.dabar-color.is-empty input[type="color"]::-webkit-color-swatch {
+	background: linear-gradient(to top right, #fff calc(50% - 1px), #d63638 50%, #fff calc(50% + 1px)) !important;
+}
+
+.dabar-color.is-empty input[type="color"]::-moz-color-swatch {
+	background: linear-gradient(to top right, #fff calc(50% - 1px), #d63638 50%, #fff calc(50% + 1px)) !important;
+}
+
 .dabar-color input[type="text"] {
 	margin: 0;
+}
+
+.dabar-admin .dabar-location-mode {
+	margin: 0 0 12px;
 }
 
 .dabar-locations-grid {

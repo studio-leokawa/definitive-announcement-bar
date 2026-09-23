@@ -14,7 +14,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class DABAR_Settings {
 
-	const OPTION    = 'dabar_settings';
+	const OPTION          = 'dabar_settings';
+	const META_VISIBILITY = '_dabar_visibility';
+
+	/**
+	 * Older "hide here" flag, still honored when no visibility is set.
+	 */
 	const META_HIDE = '_dabar_hide';
 
 	/**
@@ -34,18 +39,29 @@ final class DABAR_Settings {
 			'enabled'          => true,
 			'messages'         => array(),
 			'interval'         => 5000,
+			'button_text'      => '',
+			'button_url'       => '',
+			'button_new_tab'   => false,
+			'button_bg'        => '#ffffff',
+			'button_color'     => '#111111',
 			'placement'        => 'auto',
 			'sticky'           => false,
 			'background_color' => '#111111',
 			'text_color'       => '#ffffff',
 			'close_color'      => '#ffffff',
+			'link_color'       => '',
+			'align'            => 'center',
+			'font_family'      => '',
 			'font_size'        => '14px',
+			'height'           => '',
 			'padding'          => '10px 24px',
 			'uppercase'        => false,
 			'dismissible'      => true,
 			'dismiss_days'     => 0,
 			'fade_duration'    => 600,
 			'audience'         => 'all',
+			'devices'          => 'all',
+			'location_mode'    => 'except',
 			'hide_on'          => array(),
 			'schedule_start'   => '',
 			'schedule_end'     => '',
@@ -94,7 +110,7 @@ final class DABAR_Settings {
 	}
 
 	/**
-	 * WooCommerce locations the bar can be hidden on.
+	 * WooCommerce locations for the display rules.
 	 *
 	 * @return array
 	 */
@@ -145,7 +161,7 @@ final class DABAR_Settings {
 		$input    = is_array( $input ) ? $input : array();
 		$output   = array();
 
-		foreach ( array( 'enabled', 'sticky', 'uppercase', 'dismissible' ) as $key ) {
+		foreach ( array( 'enabled', 'sticky', 'uppercase', 'dismissible', 'button_new_tab' ) as $key ) {
 			$output[ $key ] = ! empty( $input[ $key ] );
 		}
 
@@ -157,16 +173,27 @@ final class DABAR_Settings {
 		$output['dismiss_days']  = self::clamp_int( $input, 'dismiss_days', 0, 365 );
 		$output['fade_duration'] = self::clamp_int( $input, 'fade_duration', 0, 5000 );
 
-		$output['placement'] = self::choice( $input, 'placement', array( 'auto', 'shortcode' ) );
+		$output['placement'] = self::choice( $input, 'placement', array( 'auto', 'bottom', 'shortcode' ) );
+		$output['align']     = self::choice( $input, 'align', array( 'center', 'start' ) );
 		$output['audience']  = self::choice( $input, 'audience', array( 'all', 'logged_in', 'logged_out' ) );
+		$output['devices']   = self::choice( $input, 'devices', array( 'all', 'desktop', 'mobile' ) );
 
-		foreach ( array( 'background_color', 'text_color', 'close_color' ) as $key ) {
+		$output['location_mode'] = self::choice( $input, 'location_mode', array( 'except', 'only' ) );
+
+		$output['link_color'] = self::sanitize_color( isset( $input['link_color'] ) ? $input['link_color'] : '', '' );
+
+		$output['button_text'] = isset( $input['button_text'] ) ? sanitize_text_field( $input['button_text'] ) : '';
+		$output['button_url']  = isset( $input['button_url'] ) ? esc_url_raw( trim( (string) $input['button_url'] ) ) : '';
+
+		foreach ( array( 'background_color', 'text_color', 'close_color', 'button_bg', 'button_color' ) as $key ) {
 			$output[ $key ] = self::sanitize_color( isset( $input[ $key ] ) ? $input[ $key ] : '', $defaults[ $key ] );
 		}
 
-		foreach ( array( 'font_size', 'padding' ) as $key ) {
+		foreach ( array( 'font_size', 'padding', 'height' ) as $key ) {
 			$output[ $key ] = self::sanitize_css_value( isset( $input[ $key ] ) ? $input[ $key ] : '', $defaults[ $key ] );
 		}
+
+		$output['font_family'] = self::sanitize_font_family( isset( $input['font_family'] ) ? $input['font_family'] : '' );
 
 		$hide_on           = isset( $input['hide_on'] ) ? array_map( 'sanitize_key', (array) $input['hide_on'] ) : array();
 		$known             = array_keys( array_merge( self::wp_locations(), self::wc_locations() ) );
@@ -225,6 +252,42 @@ final class DABAR_Settings {
 		}
 
 		return $fallback;
+	}
+
+	/**
+	 * Per-post override from the edit screen: 'show', 'hide' or '' to follow the display rules.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return string
+	 */
+	public static function post_visibility( $post_id ) {
+		$value = get_post_meta( $post_id, self::META_VISIBILITY, true );
+
+		if ( in_array( $value, array( 'show', 'hide' ), true ) ) {
+			return $value;
+		}
+
+		return get_post_meta( $post_id, self::META_HIDE, true ) ? 'hide' : '';
+	}
+
+	/**
+	 * Accepts a CSS font-family list such as "Inter", sans-serif or var(--font-body).
+	 * Returns an empty string (use the theme font) for anything else.
+	 *
+	 * @param mixed $value Raw value.
+	 * @return string
+	 */
+	public static function sanitize_font_family( $value ) {
+		$value = trim( (string) $value );
+
+		if ( strlen( $value ) <= 200
+			&& preg_match( '/^(?:[a-z0-9\s,"\'._-]|var\(--[a-z0-9_-]+\))+$/i', $value )
+			&& 0 === substr_count( $value, '"' ) % 2
+			&& 0 === substr_count( $value, "'" ) % 2 ) {
+			return $value;
+		}
+
+		return '';
 	}
 
 	/**

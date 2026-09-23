@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:          Definitive Announcement Bar for Bricks and WooCommerce
+ * Plugin Name:          Definitive Announcement Bar – Simple, Lightweight Top Bar for Bricks and Online Stores
  * Description:          A lightweight, rotating announcement bar for any theme. Works with Bricks Builder, block and classic themes, and WooCommerce.
  * Version:              1.0.0
  * Requires at least:    6.0

@@ -111,18 +111,22 @@ final class DABAR_Frontend {
 			return false;
 		}
 
-		$post_id = $this->current_post_id();
-		if ( $post_id && get_post_meta( $post_id, DABAR_Settings::META_HIDE, true ) ) {
-			return false;
+		// A choice made on the post's edit screen wins over the page rules.
+		$post_id    = $this->current_post_id();
+		$visibility = $post_id ? DABAR_Settings::post_visibility( $post_id ) : '';
+		if ( '' !== $visibility ) {
+			return 'show' === $visibility;
 		}
 
+		$matches = false;
 		foreach ( (array) $settings['hide_on'] as $location ) {
 			if ( $this->is_location( $location ) ) {
-				return false;
+				$matches = true;
+				break;
 			}
 		}
 
-		return true;
+		return 'only' === $settings['location_mode'] ? $matches : ! $matches;
 	}
 
 	/**
@@ -229,15 +233,34 @@ final class DABAR_Frontend {
 	 */
 	private function inline_css( $settings ) {
 		$defaults = DABAR_Settings::defaults();
+		$optional = '';
+
+		$font_family = DABAR_Settings::sanitize_font_family( $settings['font_family'] );
+		if ( '' !== $font_family ) {
+			$optional .= '--dabar-font-family:' . $font_family . ';';
+		}
+
+		$link_color = DABAR_Settings::sanitize_color( $settings['link_color'], '' );
+		if ( '' !== $link_color ) {
+			$optional .= '--dabar-link-color:' . $link_color . ';';
+		}
+
+		$height = DABAR_Settings::sanitize_css_value( $settings['height'], '' );
+		if ( '' !== $height ) {
+			$optional .= '--dabar-min-height:' . $height . ';';
+		}
 
 		return sprintf(
-			'#dabar{--dabar-bg:%1$s;--dabar-color:%2$s;--dabar-close-color:%3$s;--dabar-font-size:%4$s;--dabar-padding:%5$s;--dabar-fade:%6$dms}',
+			'#dabar{--dabar-bg:%1$s;--dabar-color:%2$s;--dabar-close-color:%3$s;--dabar-font-size:%4$s;--dabar-padding:%5$s;--dabar-fade:%6$dms;--dabar-button-bg:%7$s;--dabar-button-color:%8$s;%9$s}',
 			DABAR_Settings::sanitize_color( $settings['background_color'], $defaults['background_color'] ),
 			DABAR_Settings::sanitize_color( $settings['text_color'], $defaults['text_color'] ),
 			DABAR_Settings::sanitize_color( $settings['close_color'], $defaults['close_color'] ),
 			DABAR_Settings::sanitize_css_value( $settings['font_size'], $defaults['font_size'] ),
 			DABAR_Settings::sanitize_css_value( $settings['padding'], $defaults['padding'] ),
-			(int) $settings['fade_duration']
+			(int) $settings['fade_duration'],
+			DABAR_Settings::sanitize_color( $settings['button_bg'], $defaults['button_bg'] ),
+			DABAR_Settings::sanitize_color( $settings['button_color'], $defaults['button_color'] ),
+			$optional
 		);
 	}
 
@@ -256,11 +279,14 @@ final class DABAR_Frontend {
 	 * Prints the bar in the footer when the theme never fired the placement hook.
 	 */
 	public function print_fallback() {
-		if ( $this->rendered || 'auto' !== DABAR_Settings::get( 'placement' ) || ! $this->should_display() ) {
+		$placement = DABAR_Settings::get( 'placement' );
+
+		if ( $this->rendered || ! in_array( $placement, array( 'auto', 'bottom' ), true ) || ! $this->should_display() ) {
 			return;
 		}
 
-		echo wp_kses( $this->get_bar_html( true ), self::allowed_html() );
+		// A bottom bar is fixed to the screen, so it can stay in the footer.
+		echo wp_kses( $this->get_bar_html( 'auto' === $placement ), self::allowed_html() );
 	}
 
 	/**
@@ -290,14 +316,34 @@ final class DABAR_Frontend {
 		$end      = DABAR_Settings::timestamp( $settings['schedule_end'] );
 
 		$classes = array( 'dabar' );
-		if ( $settings['sticky'] ) {
+		if ( 'bottom' === $settings['placement'] ) {
+			$classes[] = 'dabar--bottom';
+		} elseif ( $settings['sticky'] ) {
 			$classes[] = 'dabar--sticky';
+		}
+		if ( 'start' === $settings['align'] ) {
+			$classes[] = 'dabar--align-start';
 		}
 		if ( $settings['uppercase'] ) {
 			$classes[] = 'dabar--uppercase';
 		}
 		if ( $settings['dismissible'] ) {
 			$classes[] = 'dabar--dismissible';
+		}
+		if ( 'desktop' === $settings['devices'] ) {
+			$classes[] = 'dabar--hide-mobile';
+		} elseif ( 'mobile' === $settings['devices'] ) {
+			$classes[] = 'dabar--hide-desktop';
+		}
+
+		$button = '';
+		if ( '' !== $settings['button_text'] && '' !== $settings['button_url'] ) {
+			$button = sprintf(
+				'<a class="dabar__button" href="%1$s"%2$s>%3$s</a>',
+				esc_url( $settings['button_url'] ),
+				$settings['button_new_tab'] ? ' target="_blank" rel="noopener"' : '',
+				esc_html( $settings['button_text'] )
+			);
 		}
 
 		$messages = '';
@@ -319,7 +365,7 @@ final class DABAR_Frontend {
 		}
 
 		return sprintf(
-			'<div id="dabar" class="%1$s" role="region" aria-label="%2$s" data-interval="%3$d" data-dismiss-days="%4$d" data-version="%5$s" data-start="%6$d" data-end="%7$d"%8$s%9$s><div class="dabar__inner"><div class="dabar__messages">%10$s</div>%11$s</div></div>',
+			'<div id="dabar" class="%1$s" role="region" aria-label="%2$s" data-interval="%3$d" data-dismiss-days="%4$d" data-version="%5$s" data-start="%6$d" data-end="%7$d"%8$s%9$s><div class="dabar__inner"><div class="dabar__content"><div class="dabar__messages">%10$s</div>%12$s</div>%11$s</div></div>',
 			esc_attr( implode( ' ', $classes ) ),
 			esc_attr__( 'Announcement', 'definitive-announcement-bar' ),
 			(int) $settings['interval'],
@@ -330,7 +376,8 @@ final class DABAR_Frontend {
 			$relocate ? ' data-relocate="1"' : '',
 			$start > time() ? ' hidden' : '',
 			$messages,
-			$close
+			$close,
+			$button
 		);
 	}
 

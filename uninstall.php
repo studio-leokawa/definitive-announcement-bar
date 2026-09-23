@@ -11,3 +11,4 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 delete_option( 'dabar_settings' );
 delete_post_meta_by_key( '_dabar_hide' );
+delete_post_meta_by_key( '_dabar_visibility' );

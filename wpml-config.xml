@@ -1,0 +1,11 @@
+<wpml-config>
+	<admin-texts>
+		<key name="dabar_settings">
+			<key name="messages">
+				<key name="*" />
+			</key>
+			<key name="button_text" />
+			<key name="button_url" />
+		</key>
+	</admin-texts>
+</wpml-config>

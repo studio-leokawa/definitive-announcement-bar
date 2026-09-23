@@ -57,6 +57,9 @@
 			window.addEventListener( 'resize', updateHeight );
 		}
 		document.body.classList.add( 'dabar-active' );
+		if ( bar.classList.contains( 'dabar--bottom' ) ) {
+			root.classList.add( 'dabar-bottom' );
+		}
 
 		// Rotation.
 		var messages = bar.querySelectorAll( '.dabar__message' );
@@ -68,17 +71,22 @@
 		function show( next ) {
 			messages[ index ].classList.remove( 'is-active' );
 			messages[ index ].setAttribute( 'aria-hidden', 'true' );
-			index = next;
+			index = ( next + messages.length ) % messages.length;
 			messages[ index ].classList.add( 'is-active' );
 			messages[ index ].removeAttribute( 'aria-hidden' );
 		}
 
-		if ( messages.length > 1 ) {
+		function startTimer() {
+			window.clearInterval( timer );
 			timer = window.setInterval( function () {
 				if ( ! paused && ! document.hidden ) {
-					show( ( index + 1 ) % messages.length );
+					show( index + 1 );
 				}
 			}, interval );
+		}
+
+		if ( messages.length > 1 ) {
+			startTimer();
 
 			bar.addEventListener( 'mouseenter', function () { paused = true; } );
 			bar.addEventListener( 'mouseleave', function () { paused = false; } );
@@ -104,6 +112,7 @@
 					bar.parentNode.removeChild( bar );
 				}
 				root.style.setProperty( '--dabar-height', '0px' );
+				root.classList.remove( 'dabar-bottom' );
 				document.dispatchEvent( new CustomEvent( 'dabar:dismissed' ) );
 			}
 
